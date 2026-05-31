@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offer Letter Actions</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid #b4b2a9;
+      background: transparent;
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.15s ease, opacity 0.15s ease;
+      letter-spacing: 0.01em;
+    }
+
+    .btn:hover  { background: #eceae3; }
+    .btn:active { opacity: 0.7; }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-primary {
+      background: #1a1a1a;
+      color: #f5f4f0;
+      border-color: #1a1a1a;
+    }
+
+    .btn-primary:hover { background: #2e2e2e; }
+
+    .btn-danger {
+      border-color: #e0c8c8;
+      color: #a04040;
+    }
+
+    .btn-danger:hover { background: #faf0f0; }
+  </style>
+</head>
+<body>
+
+  <div class="action-row">
+    <button class="btn btn-primary" onclick="openOfferLetter()">Open offer letter</button>
+    <button class="btn" id="sendMailButton" onclick="sendMail()">Send email</button>
+    <button class="btn btn-danger" onclick="cancelTemplate()">Cancel</button>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/openOfferLetter.js"></script>
+  <script src="../js/sendMail.js"></script>
+
+</body>
+</html>

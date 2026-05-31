@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InnerWhispers HR Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 2.5rem 1rem;
+    }
+
+    .page-wrap {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      border-bottom: 1px solid #d4d2ca;
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 17px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #1a1a1a;
+    }
+
+    .page-header p {
+      font-size: 13px;
+      color: #888780;
+      margin-top: 3px;
+    }
+
+    /* ── Selector Card ── */
+    .selector-card {
+      background: #ffffff;
+      border: 1px solid #d4d2ca;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888780;
+    }
+
+    .field select {
+      font-size: 14px;
+      padding: 8px 10px;
+      border: 1px solid #c9c7bf;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.15s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888780' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    .field select:focus { border-color: #5f5e5a; }
+
+    .submit-btn {
+      width: 100%;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 0;
+      border-radius: 6px;
+      border: 1px solid #b4b2a9;
+      background: transparent;
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    .submit-btn:hover  { background: #eceae3; }
+    .submit-btn:active { opacity: 0.7; }
+
+    /* ── Email Preview ── */
+    #emailPreviewContainer {
+      display: none;
+      background: #ffffff;
+      border: 1px solid #d4d2ca;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Email brand strip */
+    .email-brand {
+      background: #1a1a1a;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .email-brand h1 {
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: #f5f4f0;
+    }
+
+    .email-brand p {
+      font-size: 12px;
+      color: #888780;
+      margin-top: 2px;
+      letter-spacing: 0.03em;
+    }
+
+    /* Email body */
+    .email-body {
+      padding: 1.5rem;
+    }
+
+    .email-body p {
+      font-size: 14px;
+      line-height: 1.75;
+      color: #3a3a3a;
+      margin-bottom: 1rem;
+    }
+
+    .email-body strong { color: #1a1a1a; font-weight: 500; }
+
+    .link-text {
+      color: #3b6ccc;
+      font-weight: 500;
+    }
+
+    /* Details block */
+    .details-block {
+      background: #f5f4f0;
+      border: 1px solid #d4d2ca;
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+    }
+
+    .details-block .block-title {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888780;
+      margin-bottom: 0.75rem;
+    }
+
+    .detail-row {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+      color: #3a3a3a;
+      margin-bottom: 0.5rem;
+      align-items: baseline;
+    }
+
+    .detail-row:last-child { margin-bottom: 0; }
+
+    .detail-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888780;
+      width: 100px;
+      flex-shrink: 0;
+    }
+
+    /* Action buttons */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin: 1.25rem 0 0;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid #b4b2a9;
+      background: transparent;
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.15s ease, opacity 0.15s ease;
+      letter-spacing: 0.01em;
+    }
+
+    .btn:hover  { background: #eceae3; }
+    .btn:active { opacity: 0.7; }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-primary {
+      background: #1a1a1a;
+      color: #f5f4f0;
+      border-color: #1a1a1a;
+    }
+
+    .btn-primary:hover { background: #2e2e2e; }
+
+    .btn-danger {
+      border-color: #e0c8c8;
+      color: #a04040;
+    }
+
+    .btn-danger:hover { background: #faf0f0; }
+
+    /* Signature */
+    .email-signature {
+      border-top: 1px solid #d4d2ca;
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+    }
+
+    .email-signature p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #5f5e5a;
+      margin-bottom: 0;
+    }
+
+    .email-signature .sig-name {
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-top: 0.5rem;
+    }
+
+    .email-signature .sig-link {
+      color: #3b6ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrap">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>InnerWhispers</h1>
+      <p>Offer letter email automation</p>
+    </div>
+
+    <!-- Selector Card -->
+    <div class="selector-card">
+      <div class="field">
+        <label for="candidateSelect">Select intern</label>
+        <select id="candidateSelect">
+          <option value="">Choose intern</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="loadTemplate()">Generate email</button>
+    </div>
+
+    <!-- Email Preview -->
+    <div id="emailPreviewContainer">
+
+      <!-- Brand Strip -->
+      <div class="email-brand">
+        <h1>INNERWHISPERS</h1>
+        <p>Mental Health Services</p>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+
+        <p>Dear <span id="candidateName" style="font-weight:500;"></span>,</p>
+
+        <p>Greetings from <strong>InnerWhispers Mental Health Services!</strong></p>
+
+        <p>
+          We are delighted to inform you that you have been selected as an intern at
+          InnerWhispers Mental Health Services. Please find your official
+          <strong>Offer Letter</strong> attached to this email.
+        </p>
+
+        <p>
+          Kindly go through the offer letter carefully, sign the acceptance copy, and
+          return it to us at
+          <span class="link-text">interns.innerwhispers@gmail.com</span>
+          on or before <span id="deadlineDate" style="font-weight:500;"></span>.
+        </p>
+
+        <p>
+          We are truly excited to have you on board. You are now a part of the
+          InnerWhispers family — a company that is passionate about breaking stigma
+          and building wellness, one step at a time.
+        </p>
+
+        <p>We hope this journey will be a fulfilling and enriching experience for you.</p>
+
+        <!-- Internship Details -->
+        <div class="details-block">
+          <div class="block-title">Internship Details</div>
+
+          <div class="detail-row">
+            <span class="detail-label">Name</span>
+            <span id="internName"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Role</span>
+            <span id="role"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Department</span>
+            <span id="department"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Joining Date</span>
+            <span id="joiningDate"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Work Mode</span>
+            <span id="workMode"></span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="openOfferLetter()">Open offer letter</button>
+          <button class="btn" id="sendMailButton" onclick="sendMail()">Send email</button>
+          <button class="btn btn-danger" onclick="cancelTemplate()">Cancel</button>
+        </div>
+
+        <!-- Signature -->
+        <div class="email-signature">
+          <p>Warm regards,</p>
+          <p class="sig-name">B. Gopi Kalyan</p>
+          <p>Authorized Signatory</p>
+          <p>InnerWhispers Mental Health Services</p>
+          <p>+91 6301462658</p>
+          <p><span class="sig-link">interns.innerwhispers@gmail.com</span></p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script>
+    const BASE_URL = window.APP_CONFIG?.API_BASE_URL || "http://localhost:5000";
+
+    // Intern Database
+    const candidates = [
+      {
+        id: 1,
+        name: "Rahul Sharma",
+        role: "Frontend Development Intern",
+        department: "Engineering",
+        joiningDate: "15 June 2026",
+        workMode: "Remote",
+        deadline: "15-03-2026",
+        email: "rahul@example.com",
+        offerLetter: "https://example.com/rahul-offer-letter.pdf"
+      },
+      {
+        id: 2,
+        name: "Priya Reddy",
+        role: "Backend Development Intern",
+        department: "Engineering",
+        joiningDate: "18 June 2026",
+        workMode: "Hybrid",
+        deadline: "15-03-2026",
+        email: "priya@example.com",
+        offerLetter: "https://example.com/priya-offer-letter.pdf"
+      },
+      {
+        id: 3,
+        name: "Arjun Verma",
+        role: "UI/UX Design Intern",
+        department: "Design",
+        joiningDate: "20 June 2026",
+        workMode: "Onsite",
+        deadline: "15-03-2026",
+        email: "arjun@example.com",
+        offerLetter: "https://example.com/arjun-offer-letter.pdf"
+      }
+    ];
+
+    let currentCandidateData = null;
+
+    // Populate dropdown
+    const candidateSelect = document.getElementById("candidateSelect");
+    candidates.forEach(candidate => {
+      const option = document.createElement("option");
+      option.value = candidate.id;
+      option.textContent = candidate.name;
+      candidateSelect.appendChild(option);
+    });
+
+    // Load Email Template
+    function loadTemplate() {
+      const selectedId = document.getElementById("candidateSelect").value;
+      if (!selectedId) {
+        alert("Please select an intern");
+        return;
+      }
+
+      const candidate = candidates.find(c => c.id == selectedId);
+      currentCandidateData = candidate;
+
+      document.getElementById("emailPreviewContainer").style.display = "block";
+      document.getElementById("candidateName").innerText = candidate.name;
+      document.getElementById("internName").innerText = candidate.name;
+      document.getElementById("role").innerText = candidate.role;
+      document.getElementById("department").innerText = candidate.department;
+      document.getElementById("joiningDate").innerText = candidate.joiningDate;
+      document.getElementById("workMode").innerText = candidate.workMode;
+      document.getElementById("deadlineDate").innerText = candidate.deadline;
+
+      window.currentOfferLetter = candidate.offerLetter;
+      window.currentCandidate = candidate.name;
+    }
+
+    // Open Offer Letter
+    async function openOfferLetter() {
+      try {
+        if (!currentCandidateData) {
+          alert("Please select a candidate");
+          return;
+        }
+
+        const response = await fetch(
+          `${BASE_URL}/api/offer-letter/open/${currentCandidateData.id}`,
+          { method: "GET", headers: { "Content-Type": "application/json" } }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+          window.open(data.offerLetterUrl, "_blank");
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error("Open Offer Letter Error:", error);
+        alert("Failed to open offer letter");
+      }
+    }
+
+    // Send Mail
+    async function sendMail() {
+      try {
+        if (!currentCandidateData) {
+          alert("Please select a candidate");
+          return;
+        }
+
+        const sendButton = document.getElementById("sendMailButton");
+        sendButton.disabled = true;
+        sendButton.innerText = "Sending...";
+
+        const requestBody = {
+          userId: currentCandidateData.id,
+          name: currentCandidateData.name,
+          email: currentCandidateData.email,
+          emailType: "offer_letter",
+          dynamicData: {
+            role: currentCandidateData.role,
+            department: currentCandidateData.department,
+            joiningDate: currentCandidateData.joiningDate,
+            workMode: currentCandidateData.workMode,
+            deadline: currentCandidateData.deadline
+          }
+        };
+
+        const response = await fetch(`${BASE_URL}/api/emails/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert("Offer Letter Email sent successfully");
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error("Send Email Error:", error);
+        alert("Email sending failed");
+      } finally {
+        const sendButton = document.getElementById("sendMailButton");
+        sendButton.disabled = false;
+        sendButton.innerText = "Send email";
+      }
+    }
+
+    // Cancel
+    function cancelTemplate() {
+      document.getElementById("emailPreviewContainer").style.display = "none";
+      currentCandidateData = null;
+    }
+  </script>
+</body>
+</html>

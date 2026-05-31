@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HR Dashboard — InnerWhispers</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .container { max-width: 960px; margin: 0 auto; }
+
+    /* Header */
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid #d4d2ca;
+      padding-bottom: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .page-header h1 {
+      font-size: 17px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #1a1a1a;
+    }
+
+    .page-header span {
+      font-size: 12px;
+      color: #888780;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    /* Nav pill strip */
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888780;
+      margin-bottom: 0.75rem;
+    }
+
+    .nav-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 0.5px solid #e8e6e0;
+    }
+
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 0.5px solid #b4b2a9;
+      background: #fff;
+      color: #1a1a1a;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav-pill:hover {
+      background: #eceae3;
+      border-color: #888780;
+    }
+
+    .nav-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-blue   { background: #378ADD; }
+    .dot-green  { background: #639922; }
+    .dot-purple { background: #7F77DD; }
+    .dot-indigo { background: #534AB7; }
+    .dot-red    { background: #E24B4A; }
+    .dot-amber  { background: #BA7517; }
+    .dot-pink   { background: #D4537E; }
+    .dot-teal   { background: #1D9E75; }
+    .dot-gray   { background: #5F5E5A; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888780;
+      padding: 0 14px 10px;
+      text-align: left;
+      border-bottom: 1px solid #d4d2ca;
+    }
+
+    tbody td {
+      font-size: 14px;
+      color: #1a1a1a;
+      padding: 16px 14px;
+      border-bottom: 0.5px solid #e8e6e0;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .name  { font-weight: 500; font-size: 14px; }
+    .email { font-size: 12px; color: #888780; margin-top: 3px; }
+    .dept  { font-size: 13px; color: #5f5e5a; }
+
+    /* Status badge */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: #f1efe8;
+      color: #5f5e5a;
+      border: 0.5px solid #d3d1c7;
+      letter-spacing: 0.03em;
+    }
+
+    /* Email action buttons — 2-column grid */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      max-width: 280px;
+    }
+
+    .btn {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 0.5px solid #b4b2a9;
+      background: #fff;
+      color: #1a1a1a;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      transition: background 0.13s ease, opacity 0.13s ease;
+      letter-spacing: 0.01em;
+    }
+
+    .btn:hover  { background: #eceae3; }
+    .btn:active { opacity: 0.65; transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+
+    #messageBox {
+      margin-top: 1.25rem;
+      font-size: 13px;
+      color: #5f5e5a;
+      text-align: center;
+      min-height: 20px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="page-header">
+    <h1>HR Dashboard</h1>
+    <span>InnerWhispers Wellness LLP</span>
+  </div>
+
+  <p class="section-label">Email modules</p>
+  <nav class="nav-strip" aria-label="Email modules">
+    <a href="profile-creation.html" class="nav-pill"><span class="dot dot-blue"></span>Profile Creation</a>
+    <a href="application-email.html" class="nav-pill"><span class="dot dot-green"></span>Application Received</a>
+    <a href="offer-letter.html" class="nav-pill"><span class="dot dot-amber"></span>Offer Letter</a>
+    <a href="email-status.html" class="nav-pill"><span class="dot dot-teal"></span>Email Status</a>
+  </nav>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Status</th>
+        <th>Email actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="name">Sai Vasist</div>
+          <div class="email">sai@example.com</div>
+        </td>
+        <td><span class="dept">Frontend Development</span></td>
+        <td><span class="badge">Applied</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn" onclick="sendProfileMail()">Profile mail</button>
+            <button class="btn" onclick="sendInterviewMail()">Interview mail</button>
+            <button class="btn" onclick="sendSelectionMail()">Selection mail</button>
+            <button class="btn" onclick="sendRejectionMail()">Rejection mail</button>
+            <button class="btn" onclick="sendOfferMail()">Offer letter</button>
+            <button class="btn" onclick="sendReminderMail()">Reminder mail</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div id="messageBox"></div>
+
+</div>
+
+<script src="dashboardActions.js"></script>
+</body>
+</html>

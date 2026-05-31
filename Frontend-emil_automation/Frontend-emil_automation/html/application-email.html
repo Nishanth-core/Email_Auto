@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Received Email</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* Header */
+    .card-header {
+      border-bottom: 1px solid #d4d2ca;
+      padding-bottom: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .card-header h1 {
+      font-size: 17px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #1a1a1a;
+    }
+
+    .card-header p {
+      font-size: 13px;
+      color: #888780;
+      margin-top: 3px;
+    }
+
+    /* Fields */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888780;
+    }
+
+    .field input {
+      font-size: 14px;
+      padding: 8px 10px;
+      border: 1px solid #c9c7bf;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .field input:focus {
+      border-color: #5f5e5a;
+    }
+
+    .field input::placeholder {
+      color: #b4b2a9;
+    }
+
+    /* Button */
+    .submit-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 0;
+      border-radius: 6px;
+      border: 1px solid #b4b2a9;
+      background: transparent;
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    .submit-btn:hover  { background: #eceae3; }
+    .submit-btn:active { opacity: 0.7; }
+    .submit-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* Message */
+    #messageBox {
+      margin-top: 1.25rem;
+      font-size: 13px;
+      color: #5f5e5a;
+      text-align: center;
+      min-height: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+
+    <div class="card-header">
+      <h1>Application received</h1>
+      <p>Send confirmation email to the intern</p>
+    </div>
+
+    <div class="field">
+      <label for="name">Intern name</label>
+      <input type="text" id="name" placeholder="e.g. Sai Vasist" />
+    </div>
+
+    <div class="field">
+      <label for="applicationId">Application ID</label>
+      <input type="text" id="applicationId" placeholder="e.g. IW2025OP25" />
+    </div>
+
+    <div class="field">
+      <label for="role">Internship role</label>
+      <input type="text" id="role" placeholder="e.g. Frontend Development" />
+    </div>
+
+    <div class="field">
+      <label for="email">Email address</label>
+      <input type="email" id="email" placeholder="e.g. sai@example.com" />
+    </div>
+
+    <button class="submit-btn" id="sendBtn" onclick="sendApplicationMail()">
+      Send application mail
+    </button>
+
+    <div id="messageBox"></div>
+
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/applicationEmail.js"></script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Improved Email Status Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 3rem 1.5rem;
+    }
+
+    .container { max-width: 820px; margin: 0 auto; }
+
+    /* Header */
+    .page-header {
+      border-bottom: 1px solid #d4d2ca;
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #1a1a1a;
+    }
+
+    .page-header p {
+      font-size: 13px;
+      color: #888780;
+      margin-top: 4px;
+    }
+
+    /* Metric cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 600px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+
+    .card {
+      background: #eceae3;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888780;
+    }
+
+    .card-value {
+      font-size: 28px;
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    .v-blue  { color: #185fa5; }
+    .v-green { color: #3b6d11; }
+    .v-red   { color: #a32d2d; }
+    .v-amber { color: #854f0b; }
+
+    /* Section */
+    .section {
+      border: 1px solid #e8e6e0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #e8e6e0;
+    }
+
+    .section-header h2 {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .refresh-btn {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #b4b2a9;
+      background: transparent;
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .refresh-btn:hover  { background: #f1efe8; }
+    .refresh-btn:active { opacity: 0.7; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888780;
+      padding: 10px 16px;
+      text-align: left;
+      background: #faf9f6;
+      border-bottom: 1px solid #e8e6e0;
+    }
+
+    tbody td {
+      font-size: 14px;
+      color: #1a1a1a;
+      padding: 13px 16px;
+      border-bottom: 1px solid #f1efe8;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .type-cell { font-size: 13px; color: #5f5e5a; }
+    .time-cell { font-size: 13px; color: #888780; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+    }
+
+    .b-sent    { background: #eaf3de; color: #3b6d11; border: 1px solid #c0dd97; }
+    .b-failed  { background: #fcebeb; color: #a32d2d; border: 1px solid #f7c1c1; }
+    .b-pending { background: #faeeda; color: #854f0b; border: 1px solid #fac775; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="page-header">
+      <h1>Email Status Dashboard</h1>
+      <p>Monitor and manage internship email communications</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Total</div>
+        <div class="card-value v-blue" id="totalEmails">0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Sent</div>
+        <div class="card-value v-green" id="sentEmails">0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Failed</div>
+        <div class="card-value v-red" id="failedEmails">0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Pending</div>
+        <div class="card-value v-amber" id="pendingEmails">0</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Recent activity</h2>
+        <button class="refresh-btn" onclick="refreshDashboard()">Refresh</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Intern name</th>
+              <th>Email type</th>
+              <th>Status</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="emailTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const emailLogs = [
+      { name: "Sai Vasist", type: "Interview",        status: "Sent",    time: "8:20 PM" },
+      { name: "Bhavya",     type: "Offer Letter",     status: "Failed",  time: "9:10 PM" },
+      { name: "Nayana",     type: "Profile Creation", status: "Pending", time: "7:45 PM" },
+      { name: "Saitej",     type: "Selection",        status: "Sent",    time: "6:30 PM" }
+    ];
+
+    function updateCounts() {
+      document.getElementById("totalEmails").innerText   = emailLogs.length;
+      document.getElementById("sentEmails").innerText    = emailLogs.filter(l => l.status === "Sent").length;
+      document.getElementById("failedEmails").innerText  = emailLogs.filter(l => l.status === "Failed").length;
+      document.getElementById("pendingEmails").innerText = emailLogs.filter(l => l.status === "Pending").length;
+    }
+
+    function renderTable() {
+      const tb = document.getElementById("emailTableBody");
+      tb.innerHTML = "";
+      emailLogs.forEach(log => {
+        const cls = log.status === "Sent" ? "b-sent" : log.status === "Failed" ? "b-failed" : "b-pending";
+        tb.innerHTML += `
+          <tr>
+            <td>${log.name}</td>
+            <td class="type-cell">${log.type}</td>
+            <td><span class="badge ${cls}">${log.status}</span></td>
+            <td class="time-cell">${log.time}</td>
+          </tr>`;
+      });
+    }
+
+    function refreshDashboard() {
+      alert("Dashboard refreshed successfully");
+      updateCounts();
+      renderTable();
+    }
+
+    updateCounts();
+    renderTable();
+  </script>
+</body>
+</html>
