@@ -160,6 +160,15 @@
       <p>Monitor and manage internship email communications</p>
     </div>
 
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:1rem;">
+      <a class="refresh-btn" href="index.html">Home</a>
+      <a class="refresh-btn" href="hr-dashboard.html">Dashboard</a>
+      <input id="searchInput" type="search" placeholder="Search candidate or email" style="flex:1;min-width:220px;padding:10px 12px;border:1px solid #c9c7bf;border-radius:8px;outline:none;background:#fff;color:#1a1a1a;" />
+      <button class="refresh-btn" onclick="applySearch()">Search</button>
+      <button class="refresh-btn" onclick="clearSearch()">Clear</button>
+      <div id="healthStatus" style="margin-left:auto;font-size:13px;color:#5f5e5a;">Health: checking…</div>
+    </div>
+
     <div class="cards">
       <div class="card">
         <div class="card-label">Total</div>
@@ -197,48 +206,165 @@
           <tbody id="emailTableBody"></tbody>
         </table>
       </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;">
+        <div id="paginationControls"></div>
+        <div id="tableStatus" style="font-size:13px;color:#5f5e5a;"></div>
+      </div>
     </div>
 
   </div>
 
+  <script src="../js/config.js"></script>
   <script>
-    const emailLogs = [
-      { name: "Sai Vasist", type: "Interview",        status: "Sent",    time: "8:20 PM" },
-      { name: "Bhavya",     type: "Offer Letter",     status: "Failed",  time: "9:10 PM" },
-      { name: "Nayana",     type: "Profile Creation", status: "Pending", time: "7:45 PM" },
-      { name: "Saitej",     type: "Selection",        status: "Sent",    time: "6:30 PM" }
-    ];
+    const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || "http://localhost:5000";
+    const LOGS_PAGE_SIZE = 10;
 
-    function updateCounts() {
-      document.getElementById("totalEmails").innerText   = emailLogs.length;
-      document.getElementById("sentEmails").innerText    = emailLogs.filter(l => l.status === "Sent").length;
-      document.getElementById("failedEmails").innerText  = emailLogs.filter(l => l.status === "Failed").length;
-      document.getElementById("pendingEmails").innerText = emailLogs.filter(l => l.status === "Pending").length;
-    }
+    let currentPage = 1;
+    let currentQuery = "";
+    let currentPagination = null;
 
-    function renderTable() {
+    const statusClass = (status) =>
+      status === "Sent"
+        ? "b-sent"
+        : status === "Failed"
+        ? "b-failed"
+        : "b-pending";
+
+    const updateStats = (stats) => {
+      document.getElementById("totalEmails").innerText = stats.total ?? 0;
+      document.getElementById("sentEmails").innerText = stats.sent ?? 0;
+      document.getElementById("failedEmails").innerText = stats.failed ?? 0;
+      document.getElementById("pendingEmails").innerText = stats.today ?? 0;
+    };
+
+    const renderTable = (logs) => {
       const tb = document.getElementById("emailTableBody");
+      if (!tb) return;
       tb.innerHTML = "";
-      emailLogs.forEach(log => {
-        const cls = log.status === "Sent" ? "b-sent" : log.status === "Failed" ? "b-failed" : "b-pending";
+
+      if (!logs || logs.length === 0) {
+        tb.innerHTML = `<tr><td colspan="4" style="padding:18px 14px;color:#5f5e5a;">No email logs found.</td></tr>`;
+        return;
+      }
+
+      logs.forEach((log) => {
+        const cls = statusClass(log.status);
+        const dateLabel = log.sent_at ? new Date(log.sent_at).toLocaleString() : "-";
         tb.innerHTML += `
           <tr>
-            <td>${log.name}</td>
-            <td class="type-cell">${log.type}</td>
-            <td><span class="badge ${cls}">${log.status}</span></td>
-            <td class="time-cell">${log.time}</td>
+            <td>
+              <div class="name">${log.intern_name || log.email || "Unknown"}</div>
+              <div class="email">${log.email || "-"}</div>
+            </td>
+            <td class="type-cell">${log.email_type || "-"}</td>
+            <td><span class="badge ${cls}">${log.status || "Pending"}</span></td>
+            <td class="time-cell">${dateLabel}</td>
           </tr>`;
       });
+    };
+
+    const renderPagination = (pagination) => {
+      currentPagination = pagination;
+      const container = document.getElementById("paginationControls");
+      if (!container || !pagination) return;
+
+      const prevDisabled = pagination.page <= 1;
+      const nextDisabled = pagination.page >= pagination.totalPages;
+
+      container.innerHTML = `
+        <button class="refresh-btn" ${prevDisabled ? "disabled" : ""} onclick="goToPage(${pagination.page - 1})">Previous</button>
+        <span style="font-size:13px;color:#5f5e5a;margin:0 0.75rem;">Page ${pagination.page} of ${pagination.totalPages}</span>
+        <button class="refresh-btn" ${nextDisabled ? "disabled" : ""} onclick="goToPage(${pagination.page + 1})">Next</button>
+      `;
+    };
+
+    const setTableStatus = (message) => {
+      const status = document.getElementById("tableStatus");
+      if (status) status.innerText = message;
+    };
+
+    const checkHealth = async () => {
+      const badge = document.getElementById("healthStatus");
+      if (!badge) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        badge.innerText = response.ok ? "Server Status: Online" : "Server Status: Offline";
+        badge.style.color = response.ok ? "#1f6f38" : "#a32d2d";
+      } catch (error) {
+        badge.innerText = "Server Status: Offline";
+        badge.style.color = "#a32d2d";
+      }
+    };
+
+    const fetchStats = async () => {
+      const response = await fetch(`${API_BASE_URL}/api/email/stats`);
+      const data = await response.json();
+      if (response.ok && data.success) {
+        updateStats(data.data);
+      } else {
+        console.error("Stats fetch failed", data);
+      }
+    };
+
+    const fetchLogs = async (page = 1, query = "") => {
+      setTableStatus("Loading logs...");
+      const url = query
+        ? `${API_BASE_URL}/api/email/logs/search?q=${encodeURIComponent(query)}&page=${page}&limit=${LOGS_PAGE_SIZE}`
+        : `${API_BASE_URL}/api/email/logs?page=${page}&limit=${LOGS_PAGE_SIZE}`;
+
+      try {
+        const response = await fetch(url);
+        const json = await response.json();
+
+        if (response.ok && json.success) {
+          renderTable(json.data.logs || []);
+          renderPagination(json.data.pagination || { page: 1, totalPages: 1 });
+          setTableStatus(`Showing ${json.data.logs?.length ?? 0} records`);
+        } else {
+          throw new Error(json.message || "Failed to load logs");
+        }
+      } catch (error) {
+        console.error(error);
+        renderTable([]);
+        setTableStatus("Failed to load logs.");
+      }
+    };
+
+    async function refreshDashboard() {
+      await checkHealth();
+      await fetchStats();
+      await fetchLogs(currentPage, currentQuery);
     }
 
-    function refreshDashboard() {
-      alert("Dashboard refreshed successfully");
-      updateCounts();
-      renderTable();
+    function applySearch() {
+      currentQuery = document.getElementById("searchInput").value.trim();
+      currentPage = 1;
+      fetchLogs(currentPage, currentQuery);
     }
 
-    updateCounts();
-    renderTable();
+    function clearSearch() {
+      currentQuery = "";
+      document.getElementById("searchInput").value = "";
+      currentPage = 1;
+      fetchLogs(currentPage, currentQuery);
+    }
+
+    function goToPage(page) {
+      if (!currentPagination) return;
+      const nextPage = Math.max(1, Math.min(page, currentPagination.totalPages));
+      currentPage = nextPage;
+      fetchLogs(currentPage, currentQuery);
+    }
+
+    window.refreshDashboard = refreshDashboard;
+    window.applySearch = applySearch;
+    window.clearSearch = clearSearch;
+    window.goToPage = goToPage;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      refreshDashboard();
+    });
   </script>
 </body>
 </html>
