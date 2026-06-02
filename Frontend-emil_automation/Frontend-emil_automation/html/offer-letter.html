@@ -254,6 +254,11 @@
 <body>
   <div class="page-wrap">
 
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.5rem;">
+      <a href="index.html" class="btn" style="border-color:#d4d2ca;background:#fff;color:#1a1a1a;text-decoration:none;">Home</a>
+      <a href="hr-dashboard.html" class="btn" style="border-color:#d4d2ca;background:#fff;color:#1a1a1a;text-decoration:none;">HR Dashboard</a>
+    </div>
+
     <!-- Page Header -->
     <div class="page-header">
       <h1>InnerWhispers</h1>
@@ -340,6 +345,8 @@
           <button class="btn" id="sendMailButton" onclick="sendMail()">Send email</button>
           <button class="btn btn-danger" onclick="cancelTemplate()">Cancel</button>
         </div>
+
+        <div id="offerLetterStatus" style="margin-top:1rem;font-size:13px;min-height:22px;color:#5f5e5a;"></div>
 
         <!-- Signature -->
         <div class="email-signature">
@@ -460,30 +467,34 @@
 
     // Send Mail
     async function sendMail() {
-      try {
-        if (!currentCandidateData) {
-          alert("Please select a candidate");
-          return;
+      const statusBox = document.getElementById("offerLetterStatus");
+      const sendButton = document.getElementById("sendMailButton");
+
+      if (!currentCandidateData) {
+        statusBox.innerText = "Please select an intern before sending email.";
+        statusBox.style.color = "#a32d2d";
+        return;
+      }
+
+      sendButton.disabled = true;
+      sendButton.innerText = "Sending...";
+      statusBox.innerText = "Sending email...";
+      statusBox.style.color = "#5f5e5a";
+
+      const requestBody = {
+        name: currentCandidateData.name,
+        email: currentCandidateData.email,
+        emailType: "offer_letter",
+        dynamicData: {
+          role: currentCandidateData.role,
+          department: currentCandidateData.department,
+          joiningDate: currentCandidateData.joiningDate,
+          workMode: currentCandidateData.workMode,
+          deadline: currentCandidateData.deadline
         }
+      };
 
-        const sendButton = document.getElementById("sendMailButton");
-        sendButton.disabled = true;
-        sendButton.innerText = "Sending...";
-
-        const requestBody = {
-          userId: currentCandidateData.id,
-          name: currentCandidateData.name,
-          email: currentCandidateData.email,
-          emailType: "offer_letter",
-          dynamicData: {
-            role: currentCandidateData.role,
-            department: currentCandidateData.department,
-            joiningDate: currentCandidateData.joiningDate,
-            workMode: currentCandidateData.workMode,
-            deadline: currentCandidateData.deadline
-          }
-        };
-
+      try {
         const response = await fetch(`${BASE_URL}/api/emails/send`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -492,18 +503,20 @@
 
         const data = await response.json();
 
-        if (data.success) {
-          alert("Offer Letter Email sent successfully");
+        if (response.ok && data.success) {
+          statusBox.innerText = "✓ Offer letter email sent successfully.";
+          statusBox.style.color = "#1f6f38";
+          sendButton.innerText = "Sent";
         } else {
-          alert(data.message);
+          throw new Error(data.message || "Email sending failed.");
         }
       } catch (error) {
         console.error("Send Email Error:", error);
-        alert("Email sending failed");
-      } finally {
-        const sendButton = document.getElementById("sendMailButton");
-        sendButton.disabled = false;
+        statusBox.innerText = `✗ ${error.message}`;
+        statusBox.style.color = "#a32d2d";
         sendButton.innerText = "Send email";
+      } finally {
+        sendButton.disabled = false;
       }
     }
 

@@ -175,6 +175,70 @@
       text-align: center;
       min-height: 20px;
     }
+
+    .compose-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .compose-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(20,20,20,0.55);
+    }
+
+    .compose-card {
+      position: relative;
+      width: min(100%, 520px);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 1px solid #d4d2ca;
+      border-radius: 14px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.14);
+      z-index: 1;
+    }
+
+    .compose-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.25rem;
+      border-bottom: 1px solid #e8e6e0;
+    }
+
+    .compose-body {
+      padding: 1.25rem;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .compose-body label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888780;
+      margin-bottom: 0.35rem;
+    }
+
+    .compose-body input,
+    .compose-body select {
+      width: 100%;
+      font-size: 14px;
+      padding: 10px 11px;
+      border: 1px solid #c9c7bf;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1a1a1a;
+      outline: none;
+    }
   </style>
 </head>
 
@@ -188,47 +252,104 @@
 
   <p class="section-label">Email modules</p>
   <nav class="nav-strip" aria-label="Email modules">
+    <a href="index.html" class="nav-pill"><span class="dot dot-gray"></span>Home</a>
     <a href="profile-creation.html" class="nav-pill"><span class="dot dot-blue"></span>Profile Creation</a>
     <a href="application-email.html" class="nav-pill"><span class="dot dot-green"></span>Application Received</a>
     <a href="offer-letter.html" class="nav-pill"><span class="dot dot-amber"></span>Offer Letter</a>
     <a href="email-status.html" class="nav-pill"><span class="dot dot-teal"></span>Email Status</a>
   </nav>
 
+  <div class="section-label">Bulk email</div>
+  <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;align-items:center;">
+    <select id="bulkEmailType" style="min-width:210px;padding:8px 10px;border:1px solid #c9c7bf;border-radius:6px;background:#fff;color:#1a1a1a;outline:none;">
+      <option value="application_received">Application Received</option>
+      <option value="interview_scheduled">Interview Scheduled</option>
+      <option value="selection">Selection</option>
+      <option value="rejection">Rejection</option>
+      <option value="offer_letter">Offer Letter</option>
+      <option value="onboarding_reminder">Onboarding Reminder</option>
+    </select>
+    <button class="btn btn-primary" id="bulkSendButton" onclick="sendBulkEmail()">Send bulk email</button>
+    <button class="btn" onclick="toggleSelectAll()">Select all</button>
+  </div>
+
   <table>
     <thead>
       <tr>
+        <th><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" /></th>
         <th>Name</th>
         <th>Department</th>
         <th>Status</th>
         <th>Email actions</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>
-          <div class="name">Sai Vasist</div>
-          <div class="email">sai@example.com</div>
-        </td>
-        <td><span class="dept">Frontend Development</span></td>
-        <td><span class="badge">Applied</span></td>
-        <td>
-          <div class="actions">
-            <button class="btn" onclick="sendProfileMail()">Profile mail</button>
-            <button class="btn" onclick="sendInterviewMail()">Interview mail</button>
-            <button class="btn" onclick="sendSelectionMail()">Selection mail</button>
-            <button class="btn" onclick="sendRejectionMail()">Rejection mail</button>
-            <button class="btn" onclick="sendOfferMail()">Offer letter</button>
-            <button class="btn" onclick="sendReminderMail()">Reminder mail</button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
+    <tbody id="candidateTableBody"></tbody>
   </table>
 
   <div id="messageBox"></div>
 
+  <div id="composeModal" class="compose-modal">
+    <div class="compose-backdrop" onclick="closeComposeModal()"></div>
+    <div class="compose-card">
+      <div class="compose-header">
+        <div>
+          <div class="section-label">Email composer</div>
+          <h2 id="composeTitle" style="font-size:17px;margin-top:4px;">Send email</h2>
+        </div>
+        <button class="refresh-btn" onclick="closeComposeModal()">Close</button>
+      </div>
+      <div class="compose-body">
+        <div>
+          <label for="composeEmailType">Email type</label>
+          <select id="composeEmailType">
+            <option value="application_received">Application</option>
+            <option value="interview_scheduled">Interview</option>
+            <option value="selection">Selection</option>
+            <option value="rejection">Rejection</option>
+            <option value="offer_letter">Offer Letter</option>
+            <option value="onboarding_reminder">Onboarding</option>
+          </select>
+        </div>
+        <div>
+          <label for="composeName">Candidate name</label>
+          <input id="composeName" type="text" />
+        </div>
+        <div>
+          <label for="composeEmail">Email address</label>
+          <input id="composeEmail" type="email" />
+        </div>
+        <div>
+          <label for="composeRole">Role</label>
+          <input id="composeRole" type="text" />
+        </div>
+        <div>
+          <label for="composeDepartment">Department</label>
+          <input id="composeDepartment" type="text" />
+        </div>
+        <div>
+          <label for="composeJoiningDate">Joining date</label>
+          <input id="composeJoiningDate" type="text" />
+        </div>
+        <div>
+          <label for="composeWorkMode">Work mode</label>
+          <input id="composeWorkMode" type="text" />
+        </div>
+        <div>
+          <label for="composeDeadline">Deadline</label>
+          <input id="composeDeadline" type="text" />
+        </div>
+        <div id="composeStatus" style="font-size:13px;color:#5f5e5a;">Review email data and send.</div>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+          <button class="btn" onclick="closeComposeModal()">Cancel</button>
+          <button class="btn btn-primary" id="composeSendButton" onclick="confirmSendCompose()">Send email</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<script src="dashboardActions.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/dashboardActions.js"></script>
 </body>
 </html>
